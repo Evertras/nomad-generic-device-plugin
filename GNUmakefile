@@ -1,11 +1,11 @@
-PLUGIN_BINARY=skeleton-device
+PLUGIN_BINARY=generic-device
 export GO111MODULE=on
 
 default: build
 
 .PHONY: clean
 clean: ## Remove build artifacts
-	rm -rf skeleton-device launcher
+	rm -rf generic-device launcher
 
 build:
 	go build -o ${PLUGIN_BINARY} .

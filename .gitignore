@@ -41,8 +41,8 @@ exit-code
 *.swp
 *.iml
 
-nomad-skeleton-device-plugin
-skeleton-device
+nomad-generic-device-plugin
+generic-device
 launcher
 TODO.md
 
