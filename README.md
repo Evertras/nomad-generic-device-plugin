@@ -1,5 +1,5 @@
 Nomad Generic Device Plugin
-==================
+===========================
 
 Nomad allows jobs to request various devices to reserve, such as GPUs.  However,
 there is no way to specify generic devices to reserve, such as a mobile device
