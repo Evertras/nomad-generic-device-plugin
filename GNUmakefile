@@ -17,7 +17,7 @@ eval: deps build
 .PHONY: fmt
 fmt:
 	@echo "==> Fixing source code with gofmt..."
-	gofmt -s -w ./...
+	go fmt ./...
 
 .PHONY: bootstrap
 bootstrap: deps # install all dependencies
@@ -26,3 +26,4 @@ bootstrap: deps # install all dependencies
 deps:  ## Install build and development dependencies
 	@echo "==> Updating build dependencies..."
 	go build github.com/hashicorp/nomad/plugins/shared/cmd/launcher
+
