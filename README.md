@@ -21,6 +21,58 @@ will be made available for reservation.
 
 Only single, discrete devices are currently supported.
 
+A client config might include the following to enable the plugin and add some
+devices to make available:
+
+```hcl
+# This particular client has two phones and a car connected to it
+plugin "generic-device" {
+  config {
+    device {
+      type = "phone"
+      vendor = "woogle"
+      model = "nebula10"
+    }
+
+    device {
+      type = "phone"
+      vendor = "mango"
+      model = "mphone12-max"
+    }
+
+    device {
+      type = "car"
+      vendor = "doyota"
+      model = "mius"
+    }
+  }
+}
+```
+
+Then a job might look like this:
+
+```hcl
+job "self-driving-demo" {
+  type = "batch"
+  datacenters = ["dc1"]
+
+  group "run-stuff" {
+    task "drive-around" {
+      driver = "exec"
+      config {
+        command = "bash"
+        args = ["-c", "echo Circling the block... && magic-self-driving && echo Done!"]
+      }
+
+      resources {
+        # Reserve a Doyota Mius to drive around with for the duration of this task
+        device "doyota/car/mius" {}
+      }
+    }
+  }
+}
+```
+
 Wishlist
 --------
 
