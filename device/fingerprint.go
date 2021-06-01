@@ -4,14 +4,12 @@ import (
 	"context"
 	"time"
 
-	"github.com/hashicorp/nomad/helper"
 	"github.com/hashicorp/nomad/helper/uuid"
 	"github.com/hashicorp/nomad/plugins/device"
-	"github.com/hashicorp/nomad/plugins/shared/structs"
 )
 
 // doFingerprint is the long-running goroutine that detects device changes
-func (d *SkeletonDevicePlugin) doFingerprint(ctx context.Context, devices chan *device.FingerprintResponse) {
+func (d *GenericDevicePlugin) doFingerprint(ctx context.Context, devices chan *device.FingerprintResponse) {
 	defer close(devices)
 
 	// Create a timer that will fire immediately for the first detection
@@ -33,41 +31,32 @@ func (d *SkeletonDevicePlugin) doFingerprint(ctx context.Context, devices chan *
 //
 // plugin implementations will likely have a native struct provided by the corresonding SDK
 type fingerprintedDevice struct {
-	ID         string
-	deviceName string
-	PCIBusID   string
+	ID       string
+	config   GenericDeviceConfig
+	PCIBusID string
 }
 
 // writeFingerprintToChannel collects fingerprint info, partitions devices into
 // device groups, and sends the data over the provided channel.
-func (d *SkeletonDevicePlugin) writeFingerprintToChannel(devices chan<- *device.FingerprintResponse) {
-	// The logic for fingerprinting devices and detecting the diffs
-	// will vary across devices.
-	//
-	// For this example, we'll create a few virtual devices on the first
-	// fingerprinting.
-	//
-	// Subsequent loops won't do anything, and theoretically, we could just exit
-	// this method. However, for non-trivial devices, fingerprinting is an on-going
-	// process, useful for detecting new devices and tracking the health of
-	// existing devices.
-	if len(d.devices) == 0 {
-		d.deviceLock.Lock()
-		defer d.deviceLock.Unlock()
+func (d *GenericDevicePlugin) writeFingerprintToChannel(devices chan<- *device.FingerprintResponse) {
+	d.deviceLock.Lock()
+	defer d.deviceLock.Unlock()
 
-		// "discover" some devices
-		discoveredDevices := []*fingerprintedDevice{
-			{
-				ID:         uuid.Generate(),
-				deviceName: "modelA",
-				PCIBusID:   uuid.Generate(),
-			},
-			{
-				ID:         uuid.Generate(),
-				deviceName: "modelB",
-				PCIBusID:   uuid.Generate(),
-			},
+	if len(d.identifiedDevices) == 0 {
+		// "discover" the devices we have configured
+		discoveredDevices := make([]*fingerprintedDevice, 0)
+
+		for _, device := range d.configuredDevices {
+			discoveredDevices = append(discoveredDevices, &fingerprintedDevice{
+				// TODO: When is this okay to change?
+				ID:     uuid.Generate(),
+				config: device,
+				// TODO: Do we need this?
+				PCIBusID: uuid.Generate(),
+			})
 		}
+
+		d.logger.Info("Found devices", "count", len(discoveredDevices))
 
 		// during fingerprinting, devices are grouped by "device group" in
 		// order to facilitate scheduling
@@ -76,9 +65,9 @@ func (d *SkeletonDevicePlugin) writeFingerprintToChannel(devices chan<- *device.
 		// Build Fingerprint response with computed groups and send it over the channel
 		deviceListByDeviceName := make(map[string][]*fingerprintedDevice)
 		for _, device := range discoveredDevices {
-			deviceName := device.deviceName
+			deviceName := device.config.Model
 			deviceListByDeviceName[deviceName] = append(deviceListByDeviceName[deviceName], device)
-			d.devices[device.ID] = deviceName
+			d.identifiedDevices[device.ID] = device.config
 		}
 
 		// Build Fingerprint response with computed groups and send it over the channel
@@ -86,11 +75,12 @@ func (d *SkeletonDevicePlugin) writeFingerprintToChannel(devices chan<- *device.
 		for groupName, devices := range deviceListByDeviceName {
 			deviceGroups = append(deviceGroups, deviceGroupFromFingerprintData(groupName, devices))
 		}
+
 		devices <- device.NewFingerprint(deviceGroups...)
 	}
 }
 
-// deviceGroupFromFingerprintData composes deviceGroup from a slice of detected devicers
+// deviceGroupFromFingerprintData composes deviceGroup from a slice of detected devices
 func deviceGroupFromFingerprintData(groupName string, deviceList []*fingerprintedDevice) *device.DeviceGroup {
 	// deviceGroup without devices makes no sense -> return nil when no devices are provided
 	if len(deviceList) == 0 {
@@ -102,6 +92,7 @@ func deviceGroupFromFingerprintData(groupName string, deviceList []*fingerprinte
 		devices = append(devices, &device.Device{
 			ID:      dev.ID,
 			Healthy: true,
+			// TODO: Do we need this?
 			HwLocality: &device.DeviceLocality{
 				PciBusID: dev.PCIBusID,
 			},
@@ -109,24 +100,29 @@ func deviceGroupFromFingerprintData(groupName string, deviceList []*fingerprinte
 	}
 
 	deviceGroup := &device.DeviceGroup{
-		Vendor:  vendor,
-		Type:    deviceType,
+		// TODO: is this a valid assumption?
+		Vendor: deviceList[0].config.Vendor,
+		// TODO: is this a valid assumption?
+		Type: deviceList[0].config.Type,
+
 		Name:    groupName,
 		Devices: devices,
 		// The device API assumes that devices with the same DeviceName have the same
 		// attributes like amount of memory, power, bar1memory, etc.
 		// If not, then they'll need to be split into different device groups
 		// with different names.
-		Attributes: map[string]*structs.Attribute{
-			"attrA": {
-				Int:  helper.Int64ToPtr(1024),
-				Unit: "MB",
+		/*
+			Attributes: map[string]*structs.Attribute{
+				"attrA": {
+					Int:  helper.Int64ToPtr(1024),
+					Unit: "MB",
+				},
+				"attrB": {
+					Float: helper.Float64ToPtr(10.5),
+					Unit:  "MW",
+				},
 			},
-			"attrB": {
-				Float: helper.Float64ToPtr(10.5),
-				Unit:  "MW",
-			},
-		},
+		*/
 	}
 	return deviceGroup
 }

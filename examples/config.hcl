@@ -1,3 +1,13 @@
 config {
-  some_required_boolean = true
+  device {
+    type = "hwbox"
+    vendor = "some-vendor"
+    model = "specific-model"
+  }
+
+  device {
+    type = "anotherbox"
+    vendor = "another-vendor"
+    model = "another-model"
+  }
 }

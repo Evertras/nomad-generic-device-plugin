@@ -9,7 +9,7 @@ import (
 )
 
 // doStats is the long running goroutine that streams device statistics
-func (d *SkeletonDevicePlugin) doStats(ctx context.Context, stats chan<- *device.StatsResponse, interval time.Duration) {
+func (d *GenericDevicePlugin) doStats(ctx context.Context, stats chan<- *device.StatsResponse, interval time.Duration) {
 	defer close(stats)
 
 	// Create a timer that will fire immediately for the first detection
@@ -38,7 +38,7 @@ type deviceStats struct {
 
 // writeStatsToChannel collects device stats, partitions devices into
 // device groups, and sends the data over the provided channel.
-func (d *SkeletonDevicePlugin) writeStatsToChannel(stats chan<- *device.StatsResponse, timestamp time.Time) {
+func (d *GenericDevicePlugin) writeStatsToChannel(stats chan<- *device.StatsResponse, timestamp time.Time) {
 	statsData, err := d.collectStats()
 	if err != nil {
 		d.logger.Error("failed to get device stats", "error", err)
@@ -67,15 +67,15 @@ func (d *SkeletonDevicePlugin) writeStatsToChannel(stats chan<- *device.StatsRes
 	}
 }
 
-func (d *SkeletonDevicePlugin) collectStats() ([]*deviceStats, error) {
+func (d *GenericDevicePlugin) collectStats() ([]*deviceStats, error) {
 	d.deviceLock.RLock()
 	defer d.deviceLock.RUnlock()
 
 	stats := []*deviceStats{}
-	for ID, name := range d.devices {
+	for ID, d := range d.identifiedDevices {
 		stats = append(stats, &deviceStats{
 			ID:         ID,
-			deviceName: name,
+			deviceName: d.Model,
 			usedMemory: 128,
 		})
 	}
@@ -111,8 +111,8 @@ func statsForGroup(groupName string, groupStats []*deviceStats, timestamp time.T
 	}
 
 	return &device.DeviceGroupStats{
-		Vendor:        vendor,
-		Type:          deviceType,
+		Vendor:        "hardcoded-vendor",
+		Type:          "hardcoded-type",
 		Name:          groupName,
 		InstanceStats: instanceStats,
 	}
