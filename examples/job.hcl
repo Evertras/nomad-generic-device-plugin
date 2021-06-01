@@ -12,8 +12,7 @@ job "sample" {
 
       resources {
         # Resources go <vendor>/<type>/<model> when specifying all three
-        device "store-brand/anotherbox/another-model" {
-        }
+        device "store-brand/anotherbox/another-model" {}
       }
     }
   }
