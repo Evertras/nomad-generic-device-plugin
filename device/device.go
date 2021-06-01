@@ -177,6 +177,8 @@ func (d *GenericDevicePlugin) Reserve(deviceIDs []string) (*device.ContainerRese
 		return &device.ContainerReservation{}, nil
 	}
 
+	d.logger.Debug("Asked to reserve", "ids", deviceIDs)
+
 	// This pattern can be useful for some drivers to avoid a race condition where a device disappears
 	// after being scheduled by the server but before the server gets an update on the fingerprint
 	// channel that the device is no longer available.
