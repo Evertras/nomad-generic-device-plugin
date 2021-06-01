@@ -16,6 +16,10 @@ Features
 --------
 
 Currently, the plugin allows you to specify arbitrary values for a device.
+No checks are made.  If you configure a device in the client config, the device
+will be made available for reservation.
+
+Only single, discrete devices are currently supported.
 
 Wishlist
 --------
@@ -24,10 +28,14 @@ Arbitrary health check scripts to see if the device is actually healthy/availabl
 
 Arbitrary attributes that can be selected against, such as memory usage.
 
+Attribute/model scripts that can dynamically fill in data when fingerprinted.
+
+Better tests and cleaner code, this was bare minimum changes from the skeleton
+reference with some manual testing to see what actually works.
+
 Requirements
 ------------
 
-- [Nomad](https://www.nomadproject.io/downloads.html) 0.9+
 - [Go](https://golang.org/doc/install) 1.12 or later (to build the plugin)
 
 Building the Generic Device Plugin
