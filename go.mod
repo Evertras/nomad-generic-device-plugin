@@ -1,4 +1,4 @@
-module github.com/hashicorp/nomad-skeleton-device-plugin
+module github.com/evertras/nomad-generic-plugin-device
 
 go 1.12
 
