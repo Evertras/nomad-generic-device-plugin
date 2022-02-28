@@ -1,0 +1,18 @@
+before:
+  hooks:
+    - go mod tidy
+builds:
+  - goos:
+      - linux
+      - windows
+      - darwin
+    main: main.go
+    binary: generic-device
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'

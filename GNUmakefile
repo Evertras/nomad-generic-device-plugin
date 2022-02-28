@@ -1,4 +1,4 @@
-PLUGIN_BINARY=build/generic-device
+PLUGIN_BINARY=generic-device
 export GO111MODULE=on
 
 default: build
@@ -7,6 +7,7 @@ default: build
 clean: ## Remove build artifacts
 	rm -rf generic-device launcher
 
+.PHONY: build
 build: device/*.go main.go go.mod go.sum
 	go build -o ${PLUGIN_BINARY} .
 
