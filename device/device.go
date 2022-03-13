@@ -203,11 +203,14 @@ func (d *GenericDevicePlugin) Reserve(deviceIDs []string) (*device.ContainerRese
 
 	// Mounts are used to mount host volumes into a container that may include
 	// libraries, etc.
-	resp.Mounts = append(resp.Mounts, &device.Mount{
-		TaskPath: "/usr/lib/libsome-library.so",
-		HostPath: "/usr/lib/libprobably-some-fingerprinted-or-configured-library.so",
-		ReadOnly: true,
-	})
+	/*
+		DISABLED for now as not surewhat needs mounting...
+		resp.Mounts = append(resp.Mounts, &device.Mount{
+			TaskPath: "/usr/lib/libsome-library.so",
+			HostPath: "/usr/lib/libprobably-some-fingerprinted-or-configured-library.so",
+			ReadOnly: true,
+		})
+	*/
 
 	for i, id := range deviceIDs {
 		// Check if the device is known
@@ -218,15 +221,18 @@ func (d *GenericDevicePlugin) Reserve(deviceIDs []string) (*device.ContainerRese
 		// Envs are a set of environment variables to set for the task.
 		resp.Envs[fmt.Sprintf("DEVICE_%d", i)] = id
 
-		// Devices are the set of devices to mount into the container.
-		resp.Devices = append(resp.Devices, &device.DeviceSpec{
-			// TaskPath is the location to mount the device in the task's file system.
-			TaskPath: fmt.Sprintf("/dev/skel%d", i),
-			// HostPath is the host location of the device.
-			HostPath: fmt.Sprintf("/dev/devActual"),
-			// CgroupPerms defines the permissions to use when mounting the device.
-			CgroupPerms: "rx",
-		})
+		/*
+			// DISABLED for now since the devices aren't mounted, leaving for reference
+			// Devices are the set of devices to mount into the container.
+			resp.Devices = append(resp.Devices, &device.DeviceSpec{
+				// TaskPath is the location to mount the device in the task's file system.
+				TaskPath: fmt.Sprintf("/dev/skel%d", i),
+				// HostPath is the host location of the device.
+				HostPath: fmt.Sprintf("/dev/devActual"),
+				// CgroupPerms defines the permissions to use when mounting the device.
+				CgroupPerms: "rx",
+			})
+		*/
 	}
 
 	return resp, nil

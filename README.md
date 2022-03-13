@@ -97,7 +97,7 @@ Building the Generic Device Plugin
 ----------------------------------
 
 ```sh
-$ make build
+$ make
 ```
 
 Running the Plugin in Development

@@ -48,3 +48,7 @@ TODO.md
 
 ./idea
 *.iml
+
+test/server.hcl
+test/nomad
+.envrc
