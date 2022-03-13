@@ -4,6 +4,6 @@ root = true
 indent_style = space
 indent_size = 2
 
-[{Makefile,*.go}]
+[{GNUmakefile,*.go}]
 indent_style = tab
 
