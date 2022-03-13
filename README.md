@@ -12,6 +12,9 @@ on the node for reservation.
 Based on [the Skeleton Device Plugin](https://github.com/hashicorp/nomad-skeleton-device-plugin)
 provided by Hashicorp.
 
+This repo is a bit messy/unpolished for the moment.  Don't take anything here
+as a best practice.
+
 Features
 --------
 
